@@ -1,3 +1,5 @@
+![KiZAN - 25th Anniversary](/img/KiZAN_25anniv_logo200px.png "KiZAN - 25th Anniversary")
+
 # Azure IoT Workshop
 
 ## Overview
@@ -16,5 +18,3 @@ Shortened link to this repo: [http://bit.ly/AzureIoTWorkshop](http://bit.ly/Azur
 
 3. Windows Users: using Windows Explorer, locate the zip file, right-click on the file and select "Properties...".  In the area labeled "Security", check the Unblock checkbox, and click OK.  
 ![Unblock](/img/GitHub 03.PNG "Unblock")
-
-![KiZAN - 25th Anniversary](/img/KiZAN_25anniv_logo200px.png "KiZAN - 25th Anniversary")
