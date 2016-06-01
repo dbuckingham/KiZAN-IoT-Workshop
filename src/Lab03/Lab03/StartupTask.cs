@@ -8,7 +8,7 @@ using Windows.System.Threading;
 using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
 
-namespace Lab05
+namespace Lab03
 {
     public sealed class StartupTask : IBackgroundTask
     {
