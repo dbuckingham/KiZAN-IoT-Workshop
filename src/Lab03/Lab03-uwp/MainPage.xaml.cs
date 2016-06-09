@@ -22,14 +22,14 @@ namespace Lab03_uwp
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        // TODO - Replace {iot hub hostname}
-        private const string IotHubHostName = "{iot hub hostname}";
+        // TODO - Replace iot-hub-hostname
+        private const string IotHubHostName = "iot-hub-hostname";
 
-        // TODO - Replace {device id}
-        private const string DeviceId = "{device id}";
+        // TODO - Replace device-id
+        private const string DeviceId = "device-id";
 
-        // TODO - Replace {device key}
-        private const string DeviceKey = "{device key}";
+        // TODO - Replace device-key
+        private const string DeviceKey = "device-key";
 
         private const int RED_LED_PIN = 4; // GPIO pin G4
         private const int YLW_LED_PIN = 5; // GPIO pin G5
@@ -62,6 +62,8 @@ namespace Lab03_uwp
         private void Initialize()
         {
             SetCurrentTime();
+
+            Application.Current.UnhandledException += Current_UnhandledException;
 
             DeviceIdTextBox.Text = DeviceId;
 
@@ -115,14 +117,21 @@ namespace Lab03_uwp
             SetCurrentTime();
 
             var temperatureRecord = ReadTemperature();
-            Debug.WriteLine($"The temperature is {temperatureRecord.Celsious} Celsius and {temperatureRecord.Fahrenheit} Farenheit.");
+            Debug.WriteLine($"The temperature is {temperatureRecord.Celsius} Celsius and {temperatureRecord.Fahrenheit} Farenheit.");
 
             UpdateTemperatureControls(temperatureRecord);
             UpdateCircuit(temperatureRecord);
 
             if(TemperatureShouldBeSentToIotHub())
             {
-                SendTemperature(temperatureRecord);
+                try
+                {
+                    SendTemperature(temperatureRecord);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
             }
         }
 
@@ -133,30 +142,40 @@ namespace Lab03_uwp
 
         private TemperatureRecord ReadTemperature()
         {
-            //From data sheet -- 1 byte selector for channel 0 on the ADC
-            // First Byte sends the Start bit for SPI
-            // Second Byte is the Configuration Byte
-            //1 - single ended (this is where the 8 below is added)
-            //0 - d2
-            //0 - d1
-            //0 - d0
-            //             S321XXXX <-- single-ended channel selection configure bits
-            // Channel 0 = 10000000 = 0x80 OR (8+channel) << 4
-            // Third Byte is empty
-            var transmitBuffer = new byte[3] { 1, 0x80, 0x00 };
-            var receiveBuffer = new byte[3];
+            double tempC = 0.0;
 
-            _mcp3008.TransferFullDuplex(transmitBuffer, receiveBuffer);
+            try
+            {
+                //From data sheet -- 1 byte selector for channel 0 on the ADC
+                // First Byte sends the Start bit for SPI
+                // Second Byte is the Configuration Byte
+                //1 - single ended (this is where the 8 below is added)
+                //0 - d2
+                //0 - d1
+                //0 - d0
+                //             S321XXXX <-- single-ended channel selection configure bits
+                // Channel 0 = 10000000 = 0x80 OR (8+channel) << 4
+                // Third Byte is empty
+                var transmitBuffer = new byte[3] { 1, 0x80, 0x00 };
+                var receiveBuffer = new byte[3];
 
-            //first byte returned is 0 (00000000), 
-            //second byte returned we are only interested in the last 2 bits 00000011 ( &3) 
-            //shift 8 bits to make room for the data from the 3rd byte (makes 10 bits total)
-            //third byte, need all bits, simply add it to the above result 
-            var result = ((receiveBuffer[1] & 3) << 8) + receiveBuffer[2];
+                _mcp3008.TransferFullDuplex(transmitBuffer, receiveBuffer);
 
-            //LM36 == 10mV/1degC ... 3.3V = 3300.0, 10 bit chip # steps is 2 exp 10 == 1024
-            var mv = result * (3300.0 / 1024.0);
-            var tempC = (mv - 500.0) / 10.0;
+                //first byte returned is 0 (00000000), 
+                //second byte returned we are only interested in the last 2 bits 00000011 ( &3) 
+                //shift 8 bits to make room for the data from the 3rd byte (makes 10 bits total)
+                //third byte, need all bits, simply add it to the above result 
+                var result = ((receiveBuffer[1] & 3) << 8) + receiveBuffer[2];
+
+                //LM36 == 10mV/1degC ... 3.3V = 3300.0, 10 bit chip # steps is 2 exp 10 == 1024
+                var mv = result * (3300.0 / 1024.0);
+                tempC = (mv - 500.0) / 10.0;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                tempC = 0.0;
+            }
 
             return new TemperatureRecord(tempC);
         }
@@ -213,7 +232,7 @@ namespace Lab03_uwp
             var dataPoints = new
             {
                 deviceId = DeviceId,
-                tempC = temperatureRecord.Celsious,
+                tempC = temperatureRecord.Celsius,
                 tempF = temperatureRecord.Fahrenheit
             };
 
@@ -227,54 +246,70 @@ namespace Lab03_uwp
 
         private async void ReceiveAverageTemperature()
         {
-            while (true)
+            try
             {
-                ServiceBusConnectionStringBuilder builder = new ServiceBusConnectionStringBuilder("Endpoint=sb://kizaniotworkshop.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=QAJrGyephdqNLOXmBOGtNGS07jbd5EJ298N6Ap/Mn0U=");
-                builder.TransportType = ppatierno.AzureSBLite.Messaging.TransportType.Amqp;
-
-                MessagingFactory factory = MessagingFactory.CreateFromConnectionString("Endpoint=sb://kizaniotworkshop.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=QAJrGyephdqNLOXmBOGtNGS07jbd5EJ298N6Ap/Mn0U=");
-
-                SubscriptionClient client = factory.CreateSubscriptionClient("avgtempnotification", "iot");
-
                 while (true)
                 {
-                    try
+                    ServiceBusConnectionStringBuilder builder = new ServiceBusConnectionStringBuilder("Endpoint=sb://kizaniotworkshop.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=QAJrGyephdqNLOXmBOGtNGS07jbd5EJ298N6Ap/Mn0U=");
+                    builder.TransportType = ppatierno.AzureSBLite.Messaging.TransportType.Amqp;
+
+                    MessagingFactory factory = MessagingFactory.CreateFromConnectionString("Endpoint=sb://kizaniotworkshop.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=QAJrGyephdqNLOXmBOGtNGS07jbd5EJ298N6Ap/Mn0U=");
+
+                    SubscriptionClient client = factory.CreateSubscriptionClient("avgtempnotification", "iot");
+
+                    while (true)
                     {
-                        BrokeredMessage message = client.Receive();
-                        if (message != null)
+                        try
                         {
-                            var messageText = Encoding.ASCII.GetString(message.GetBytes());
-                            var startingIndex = messageText.IndexOf("?", StringComparison.Ordinal);
-                            var messageBody = messageText.Substring(startingIndex + 2);
-                            
-                            var definition = new { timestamp = DateTime.Now, avgtempc = 0.0, avgtempf = 0.0 };
-                            var result = JsonConvert.DeserializeAnonymousType(messageBody, definition);
+                            BrokeredMessage message = client.Receive();
+                            if (message != null)
+                            {
+                                var messageText = Encoding.ASCII.GetString(message.GetBytes());
+                                var startingIndex = messageText.IndexOf("?", StringComparison.Ordinal);
+                                var messageBody = messageText.Substring(startingIndex + 2);
 
-                            _avgTemperature = result.avgtempf;
+                                var definition = new { timestamp = DateTime.Now, avgtempc = 0.0, avgtempf = 0.0 };
+                                var result = JsonConvert.DeserializeAnonymousType(messageBody, definition);
 
-                            message.Complete();
+                                _avgTemperature = result.avgtempf;
+                                Debug.WriteLine($"<< Received Average Temperature from Cloud (in degrees F)... {_avgTemperature}");
+
+                                message.Complete();
+                            }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(ex.Message);
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex.Message);
+                        }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+        }
+
+        private void Current_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Debug.WriteLine($"Unhandled Exception: {e.Message}");
+            e.Handled = true;
         }
     }
 
     internal class TemperatureRecord
     {
         public DateTime Timestamp { get; private set; }
-        public double Celsious { get; private set; }
+        public double Celsius { get; private set; }
         public double Fahrenheit { get; private set; }
 
         public TemperatureRecord(double celsius)
         {
             Timestamp = DateTime.UtcNow;
-            Celsious = celsius;
+            Celsius = celsius;
             Fahrenheit = (celsius * 9.0 / 5.0) + 32;
         }
     }
+
+
 }
