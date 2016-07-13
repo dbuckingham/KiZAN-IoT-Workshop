@@ -23,13 +23,13 @@ namespace Lab03_uwp
     public sealed partial class MainPage : Page
     {
         // TODO - Replace iot-hub-hostname
-        private const string IotHubHostName = "iot-hub-hostname";
+        private const string IotHubHostName = "KiZANIoTHub.azure-devices.net";
 
         // TODO - Replace device-id
-        private const string DeviceId = "device-id";
+        private const string DeviceId = "kizan-pi-11";
 
         // TODO - Replace device-key
-        private const string DeviceKey = "device-key";
+        private const string DeviceKey = "xbU8+Bed2yVCMRWVHlIbp28YA72JqJG9Mk3c5vV7zjE=";
 
         private const int RED_LED_PIN = 4; // GPIO pin G4
         private const int YLW_LED_PIN = 5; // GPIO pin G5
