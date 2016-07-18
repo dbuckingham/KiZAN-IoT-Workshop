@@ -2,16 +2,17 @@
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.Data.Json;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Gpio;
 using Windows.Devices.Spi;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Devices.Tpm;
 using Newtonsoft.Json;
 using ppatierno.AzureSBLite;
 using ppatierno.AzureSBLite.Messaging;
+using TransportType = Microsoft.Azure.Devices.Client.TransportType;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -22,18 +23,11 @@ namespace Lab03_uwp
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        // TODO - Replace iot-hub-hostname
-        private const string IotHubHostName = "iot-hub-hostname";
-
-        // TODO - Replace device-id
-        private const string DeviceId = "device-id";
-
-        // TODO - Replace device-key
-        private const string DeviceKey = "device-key";
-
         private const int RED_LED_PIN = 4; // GPIO pin G4
         private const int YLW_LED_PIN = 5; // GPIO pin G5
         private const int IotHubSendInterval = 5;
+
+        private string _deviceId;
 
         private DispatcherTimer _dispatcherTimer;
         private SpiDevice _mcp3008;
@@ -65,8 +59,6 @@ namespace Lab03_uwp
 
             Application.Current.UnhandledException += Current_UnhandledException;
 
-            DeviceIdTextBox.Text = DeviceId;
-
             ThermometerValue.Visibility =
                 AverageTempFTextBox.Visibility =
                 Visibility.Collapsed;
@@ -74,6 +66,8 @@ namespace Lab03_uwp
             InitializeGpio();
             InitializeMcp3008().Wait(TimeSpan.FromSeconds(5));
             InitializeDeviceClient();
+
+            DeviceIdTextBox.Text = _deviceId;
         }
 
         private void InitializeGpio()
@@ -106,10 +100,18 @@ namespace Lab03_uwp
             }
         }
 
-        private void InitializeDeviceClient()
+        private DeviceClient InitializeDeviceClient()
         {
-            _deviceClient = DeviceClient.Create(IotHubHostName,
-                new DeviceAuthenticationWithRegistrySymmetricKey(DeviceId, DeviceKey));
+            TpmDevice device = new TpmDevice(0);
+            string hubUri = device.GetHostName();
+            string deviceId = device.GetDeviceId();
+            string sasToken = device.GetSASToken();
+
+            _deviceId = deviceId;
+
+            return DeviceClient.Create(
+                hubUri,
+                AuthenticationMethodFactory.CreateAuthenticationWithToken(deviceId, sasToken));
         }
 
         private void DispatcherTimerTick(object sender, object e)
@@ -122,7 +124,7 @@ namespace Lab03_uwp
             UpdateTemperatureControls(temperatureRecord);
             UpdateCircuit(temperatureRecord);
 
-            if(TemperatureShouldBeSentToIotHub())
+            if (TemperatureShouldBeSentToIotHub())
             {
                 try
                 {
@@ -179,24 +181,31 @@ namespace Lab03_uwp
 
             return new TemperatureRecord(tempC);
         }
-        
+
         private void UpdateTemperatureControls(TemperatureRecord temperatureRecord)
         {
-            ThermometerValue.Visibility = Visibility.Visible;
-
-            CurrentTempFTextBox.Text = string.Format("The current\r\ntemperature\r\nis {0} °F.", Math.Round(temperatureRecord.Fahrenheit,2));
-
-            if (_avgTemperature > 0.0)
+            try
             {
-                AverageTempFTextBox.Text = string.Format("The average\r\ntemperature\r\nis {0} °F.", Math.Round(_avgTemperature, 2));
-                AverageTempFTextBox.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                AverageTempFTextBox.Visibility = Visibility.Collapsed;
-            }
+                ThermometerValue.Visibility = Visibility.Visible;
 
-            UpdateThermometerControls(temperatureRecord);
+                CurrentTempFTextBox.Text = string.Format("The current\r\ntemperature\r\nis {0} °F.", Math.Round(temperatureRecord.Fahrenheit, 2));
+
+                if (_avgTemperature > 0.0)
+                {
+                    AverageTempFTextBox.Text = string.Format("The average\r\ntemperature\r\nis {0} °F.", Math.Round(_avgTemperature, 2));
+                    AverageTempFTextBox.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    AverageTempFTextBox.Visibility = Visibility.Collapsed;
+                }
+
+                UpdateThermometerControls(temperatureRecord);
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         private void UpdateThermometerControls(TemperatureRecord temperatureRecord)
@@ -229,19 +238,31 @@ namespace Lab03_uwp
 
         private async void SendTemperature(TemperatureRecord temperatureRecord)
         {
-            var dataPoints = new
+            try
             {
-                deviceId = DeviceId,
-                tempC = temperatureRecord.Celsius,
-                tempF = temperatureRecord.Fahrenheit
-            };
+                var dataPoints = new
+                {
+                    deviceId = _deviceId,
+                    tempC = temperatureRecord.Celsius,
+                    tempF = temperatureRecord.Fahrenheit
+                };
 
-            var messageString = JsonConvert.SerializeObject(dataPoints);
-            var message = new Message(Encoding.ASCII.GetBytes(messageString));
+                var messageString = JsonConvert.SerializeObject(dataPoints);
+                var message = new Message(Encoding.ASCII.GetBytes(messageString));
 
-            Debug.WriteLine($">> Sending current temperature to Iot Hub... {messageString}");
+                Debug.WriteLine($">> Sending current temperature to Iot Hub... {messageString}");
 
-            await _deviceClient.SendEventAsync(message);
+                var deviceClient = InitializeDeviceClient();
+
+                await deviceClient.SendEventAsync(message);
+
+                deviceClient.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("FAILED to send temperature to Iot Hub.");
+                Debug.WriteLine(ex);
+            }
         }
 
         private async void ReceiveAverageTemperature()
