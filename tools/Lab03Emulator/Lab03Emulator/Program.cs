@@ -39,7 +39,7 @@ namespace Lab03Emulator
                 var messageString = JsonConvert.SerializeObject(dataPoints);
                 var message = new Message(Encoding.ASCII.GetBytes(messageString));
 
-                Console.WriteLine($"{messageString}");
+                Console.WriteLine($"{DateTime.Now.ToString("T")} > {messageString}");
 
                 // Initialize device client and send message
                 var deviceClient = DeviceClient.Create(
