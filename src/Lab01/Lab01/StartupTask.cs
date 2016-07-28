@@ -15,7 +15,6 @@ namespace Lab01
         private GpioPin _redLedPin;
         private GpioPinValue _redLedValue = GpioPinValue.Low;
 
-        //
         private ThreadPoolTimer _timer;
 
         public void Run(IBackgroundTaskInstance taskInstance)
