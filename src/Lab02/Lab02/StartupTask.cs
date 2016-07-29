@@ -35,6 +35,7 @@ namespace Lab02
             _deferral = taskInstance.GetDeferral();
 
             InitializeGpio();
+            InitializeActivityGpio();
 
             _timer = ThreadPoolTimer.CreatePeriodicTimer(Timer_Tick, TimeSpan.FromMilliseconds(500));
         }
