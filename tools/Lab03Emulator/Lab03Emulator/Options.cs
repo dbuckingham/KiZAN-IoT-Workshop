@@ -6,6 +6,8 @@ namespace Lab03Emulator
 {
     internal class Options
     {
+        private readonly double _baseRuntimeHours;
+
         [Option('h', "hostName", HelpText = "Hostname for the IoT Hub.")]
         public string IotHub { get; set; }
 
@@ -20,6 +22,15 @@ namespace Lab03Emulator
 
         [Option("maxTemp", DefaultValue = 80.0, HelpText = "The maximum temperature in degrees Farenheit.")]
         public double MaxTemp { get; set; }
+
+        [Option("MinRuntimeHours", DefaultValue = 10000.0, HelpText="The minimum value for the number of runtime hours.")]
+        public double MinRuntimeHours { get; set; }
+
+        public Options()
+        {
+            var r = new Random();
+            _baseRuntimeHours = Math.Round(r.NextDouble() * (1000 - 0) + 0, 2);
+        }
 
         public string GetIotHub()
         {
@@ -70,6 +81,18 @@ namespace Lab03Emulator
             }
 
             return maxTemp;
+        }
+
+        public double GetRuntimeHours()
+        {
+            var minRunTimeHours = MinRuntimeHours;
+
+            if (minRunTimeHours <= 0.0 && !double.TryParse(ConfigurationManager.AppSettings["minRunTimeHours"], out minRunTimeHours))
+            {
+                return 10000.0 + _baseRuntimeHours;
+            }
+
+            return minRunTimeHours + _baseRuntimeHours;
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using Microsoft.Azure.Devices.Client;
@@ -9,30 +8,34 @@ namespace Lab03Emulator
 {
     class Program
     {
+        private static Options Options { get; set; }
+        private static readonly DateTime StartTime = DateTime.UtcNow;
+
         static void Main(string[] args)
         {
+            Options = new Options();
+            CommandLine.Parser.Default.ParseArguments(args, Options);
 
             Console.WriteLine("Press CTRL-C to exit emulator.");
             Console.WriteLine();
 
             while (true)
             {
-                var options = new Options();
-
-                var iotHub = options.GetIotHub();
-                var deviceId = options.GetDeviceId();
-                var key = options.GetKey();
+                var iotHub = Options.GetIotHub();
+                var deviceId = Options.GetDeviceId();
+                var key = Options.GetKey();
 
                 // Get Temperature Record
-                //var temperatureRecord = new TemperatureRecord(23.3);
-                var temperatureRecord = new TemperatureRecord(options.GetMinTemperature(), options.GetMaxTemperature());
-
+                var temperatureRecord = new TemperatureRecord(Options.GetMinTemperature(), Options.GetMaxTemperature());
+                var runtime = GetRuntime();
+                
                 // Build object to send
                 var dataPoints = new
                 {
-                    deviceId = deviceId,
+                    deviceId,
                     tempC = temperatureRecord.Celsius,
-                    tempF = temperatureRecord.Fahrenheit
+                    tempF = temperatureRecord.Fahrenheit,
+                    runtime
                 };
 
                 // Create message to send
@@ -52,6 +55,14 @@ namespace Lab03Emulator
 
                 Thread.Sleep(5000);
             }
+        }
+
+        private static double GetRuntime()
+        {
+            var runtime = Options.GetRuntimeHours();
+            var duration = DateTime.UtcNow - StartTime;
+
+            return runtime + duration.Hours;
         }
     }
 }
