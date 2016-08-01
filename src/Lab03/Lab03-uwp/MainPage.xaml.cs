@@ -15,6 +15,7 @@ using ppatierno.AzureSBLite.Messaging;
 using Windows.ApplicationModel.Background;
 using Windows.System.Threading;
 using TransportType = Microsoft.Azure.Devices.Client.TransportType;
+using System.Runtime.InteropServices;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -47,6 +48,10 @@ namespace Lab03_uwp
         private GpioPinValue _actLedValue = GpioPinValue.High;
         private ThreadPoolTimer _activityTimer;
 
+        //Runtime
+        private static readonly DateTime StartTime = DateTime.UtcNow;
+        private double _baseRuntimeHours; 
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -77,6 +82,11 @@ namespace Lab03_uwp
             InitializeDeviceClient();
 
             DeviceIdTextBox.Text = _deviceId;
+
+            //Runtime Initialization
+            var r = new Random();
+            _baseRuntimeHours = 10000.0 + Math.Round(r.NextDouble() * (1000 - 0) + 0, 2);
+
         }
 
         private void InitializeGpio()
@@ -265,11 +275,13 @@ namespace Lab03_uwp
         {
             try
             {
+                var runtime = GetRuntime();
                 var dataPoints = new
                 {
                     deviceId = _deviceId,
                     tempC = temperatureRecord.Celsius,
-                    tempF = temperatureRecord.Fahrenheit
+                    tempF = temperatureRecord.Fahrenheit,
+                    runtime
                 };
 
                 var messageString = JsonConvert.SerializeObject(dataPoints);
@@ -340,6 +352,14 @@ namespace Lab03_uwp
         {
             Debug.WriteLine($"Unhandled Exception: {e.Message}");
             e.Handled = true;
+        }
+
+        private double GetRuntime()
+        {
+            var runtime = _baseRuntimeHours;
+            var duration = DateTime.UtcNow - StartTime;
+
+            return runtime + duration.Hours;
         }
     }
 
