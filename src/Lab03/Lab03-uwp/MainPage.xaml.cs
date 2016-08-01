@@ -12,6 +12,8 @@ using Microsoft.Devices.Tpm;
 using Newtonsoft.Json;
 using ppatierno.AzureSBLite;
 using ppatierno.AzureSBLite.Messaging;
+using Windows.ApplicationModel.Background;
+using Windows.System.Threading;
 using TransportType = Microsoft.Azure.Devices.Client.TransportType;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -39,6 +41,12 @@ namespace Lab03_uwp
         private GpioPin _redLedPin;
         private GpioPin _yellowLedPin;
 
+        //Activity Pin
+        private const int ACT_LED_PIN = 47;
+        private GpioPin _actLedPin;
+        private GpioPinValue _actLedValue = GpioPinValue.High;
+        private ThreadPoolTimer _activityTimer;
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -64,6 +72,7 @@ namespace Lab03_uwp
                 Visibility.Collapsed;
 
             InitializeGpio();
+            InitializeActivityGpio();
             InitializeMcp3008().Wait(TimeSpan.FromSeconds(5));
             InitializeDeviceClient();
 
@@ -84,6 +93,22 @@ namespace Lab03_uwp
             _yellowLedPin = _gpio.OpenPin(YLW_LED_PIN);
             _yellowLedPin.Write(GpioPinValue.High);
             _yellowLedPin.SetDriveMode(GpioPinDriveMode.Output);
+        }
+
+        private void InitializeActivityGpio()
+        {
+            _actLedPin = _gpio.OpenPin(ACT_LED_PIN);
+            _actLedPin.Write(GpioPinValue.High);
+            _actLedPin.SetDriveMode(GpioPinDriveMode.Output);
+
+            _activityTimer = ThreadPoolTimer.CreatePeriodicTimer(ActivityTimer_Tick, TimeSpan.FromMilliseconds(1000));
+        }
+
+        private void ActivityTimer_Tick(ThreadPoolTimer timer)
+        {
+            _actLedValue = (_actLedValue == GpioPinValue.High) ? GpioPinValue.Low : GpioPinValue.High;
+
+            _actLedPin.Write(_actLedValue);
         }
 
         private async Task InitializeMcp3008()

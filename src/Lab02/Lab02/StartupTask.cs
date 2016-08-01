@@ -24,11 +24,18 @@ namespace Lab02
 
         private ThreadPoolTimer _timer;
 
+        //Activity Pin
+        private const int ACT_LED_PIN = 47;
+        private GpioPin _actLedPin;
+        private GpioPinValue _actLedValue = GpioPinValue.High;
+        private ThreadPoolTimer _activityTimer;
+
         public void Run(IBackgroundTaskInstance taskInstance)
         {
             _deferral = taskInstance.GetDeferral();
 
             InitializeGpio();
+            InitializeActivityGpio();
 
             _timer = ThreadPoolTimer.CreatePeriodicTimer(Timer_Tick, TimeSpan.FromMilliseconds(500));
         }
@@ -60,6 +67,15 @@ namespace Lab02
             _yellowButtonPin.ValueChanged += _yellowButtonPin_ValueChanged;
         }
 
+        private void InitializeActivityGpio()
+        {
+            _actLedPin = _gpio.OpenPin(ACT_LED_PIN);
+            _actLedPin.Write(GpioPinValue.High);
+            _actLedPin.SetDriveMode(GpioPinDriveMode.Output);
+
+            _activityTimer = ThreadPoolTimer.CreatePeriodicTimer(ActivityTimer_Tick, TimeSpan.FromMilliseconds(1000));
+        }
+
         private void _yellowButtonPin_ValueChanged(GpioPin sender, GpioPinValueChangedEventArgs args)
         {
             _yellowLedValue = (args.Edge == GpioPinEdge.RisingEdge) ? GpioPinValue.High : GpioPinValue.Low;
@@ -70,6 +86,13 @@ namespace Lab02
         {
             _redLedValue = (_redLedValue == GpioPinValue.High) ? GpioPinValue.Low : GpioPinValue.High;
             _redLedPin.Write(_redLedValue);
+        }
+
+        private void ActivityTimer_Tick(ThreadPoolTimer timer)
+        {
+            _actLedValue = (_actLedValue == GpioPinValue.High) ? GpioPinValue.Low : GpioPinValue.High;
+
+            _actLedPin.Write(_actLedValue);
         }
     }
 }
