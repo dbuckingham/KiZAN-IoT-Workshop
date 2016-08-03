@@ -223,7 +223,20 @@ namespace Lab03_uwp
             {
                 ThermometerValue.Visibility = Visibility.Visible;
 
+                if (temperatureRecord.Fahrenheit < 0)
+                {
+                    ErrorTextBox.Text = string.Format("An error was detected with the circuit.");
+                    ErrorTextBox.Visibility = Visibility.Visible;
+                    ErrorIcon.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    ErrorTextBox.Visibility = Visibility.Collapsed;
+                    ErrorIcon.Visibility = Visibility.Collapsed;
+                }
+                
                 CurrentTempFTextBox.Text = string.Format("The current\r\ntemperature\r\nis {0} °F.", Math.Round(temperatureRecord.Fahrenheit, 2));
+                
 
                 if (_avgTemperature > 0.0)
                 {

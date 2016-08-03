@@ -109,6 +109,7 @@
     <None Include="Lab03-uwp_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Alert-Icon-.png" />
     <Content Include="Assets\KiZANLogo-BlueandOrange-314x150.png" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
