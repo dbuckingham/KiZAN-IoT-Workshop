@@ -225,13 +225,13 @@ namespace Lab03_uwp
 
                 if (temperatureRecord.Fahrenheit < 0)
                 {
-                    ErrorTempTextBox.Text = string.Format("An error was detected with the circuit");
-                    ErrorTempTextBox.Visibility = Visibility.Visible;
+                    ErrorTextBox.Text = string.Format("An error was detected with the circuit.");
+                    ErrorTextBox.Visibility = Visibility.Visible;
                     ErrorIcon.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    ErrorTempTextBox.Visibility = Visibility.Collapsed;
+                    ErrorTextBox.Visibility = Visibility.Collapsed;
                     ErrorIcon.Visibility = Visibility.Collapsed;
                 }
                 
