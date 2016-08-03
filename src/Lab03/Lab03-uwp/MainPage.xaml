@@ -57,7 +57,7 @@
                  Margin="10" IsReadOnly="True" FontSize="48" BorderThickness="0" TextWrapping="Wrap" />
         </StackPanel>
 
-        <TextBox x:Name="ErrorTempTextBox" Grid.Column="0" HorizontalAlignment="Center" Margin="0,0,10,0" Grid.Row="2" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="24" IsReadOnly="True" BorderThickness="0" />
+        <TextBox x:Name="ErrorTempTextBox" Text="Error" Grid.Column="0" HorizontalAlignment="Center" Margin="0,0,10,20" Grid.Row="2" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="24" IsReadOnly="True" BorderThickness="0" />
         <TextBox x:Name="CurrentTime" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,10,0" Grid.Row="2" TextWrapping="Wrap" Text="12:00 AM" VerticalAlignment="Center" FontSize="24" IsReadOnly="True" BorderThickness="0" />
     </Grid>
 </Page>
