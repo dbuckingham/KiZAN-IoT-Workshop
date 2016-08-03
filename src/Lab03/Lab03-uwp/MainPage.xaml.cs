@@ -225,13 +225,15 @@ namespace Lab03_uwp
 
                 if (temperatureRecord.Fahrenheit < 0)
                 {
-                    ErrorTempTextBox.Text = string.Format("There is an ERROR with the circuit.");
-                    //ErrorTempTextBox.Visibility = Visibility.Visible;
+                    ErrorTempTextBox.Text = string.Format("An error was detected with the circuit");
+                    ErrorTempTextBox.Visibility = Visibility.Visible;
+                    ErrorIcon.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    ErrorTempTextBox.Text = string.Format("");
-                    //ErrorTempTextBox.Visibility = Visibility.Collapsed;
+                    //ErrorTempTextBox.Text = string.Format("");
+                    ErrorTempTextBox.Visibility = Visibility.Collapsed;
+                    ErrorIcon.Visibility = Visibility.Collapsed;
                 }
                 
                 CurrentTempFTextBox.Text = string.Format("The current\r\ntemperature\r\nis {0} °F.", Math.Round(temperatureRecord.Fahrenheit, 2));
