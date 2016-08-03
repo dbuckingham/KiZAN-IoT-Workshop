@@ -231,7 +231,6 @@ namespace Lab03_uwp
                 }
                 else
                 {
-                    //ErrorTempTextBox.Text = string.Format("");
                     ErrorTempTextBox.Visibility = Visibility.Collapsed;
                     ErrorIcon.Visibility = Visibility.Collapsed;
                 }
