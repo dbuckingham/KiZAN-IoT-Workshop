@@ -5,10 +5,6 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigDataLab", "BigDataLab\BigDataLab.csproj", "{13440852-B726-445A-84C5-2A1A90AB8453}"
 EndProject
-Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "BigDataLab.Service", "BigDataLab.Service\BigDataLab.Service.ccproj", "{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigDataLab.WorkerRole", "BigDataLab.WorkerRole\BigDataLab.WorkerRole.csproj", "{E969967B-6264-4454-9B30-8EA924D50ED4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,38 +37,6 @@ Global
 		{13440852-B726-445A-84C5-2A1A90AB8453}.Release|x86.ActiveCfg = Release|x86
 		{13440852-B726-445A-84C5-2A1A90AB8453}.Release|x86.Build.0 = Release|x86
 		{13440852-B726-445A-84C5-2A1A90AB8453}.Release|x86.Deploy.0 = Release|x86
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Debug|ARM.Build.0 = Debug|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Debug|x64.Build.0 = Debug|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Debug|x86.Build.0 = Debug|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Release|ARM.ActiveCfg = Release|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Release|ARM.Build.0 = Release|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Release|x64.ActiveCfg = Release|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Release|x64.Build.0 = Release|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Release|x86.ActiveCfg = Release|Any CPU
-		{925DE3C6-BBCE-45A0-BC2B-FDE00467DE6A}.Release|x86.Build.0 = Release|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Debug|ARM.Build.0 = Debug|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Debug|x64.Build.0 = Debug|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Debug|x86.Build.0 = Debug|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Release|ARM.ActiveCfg = Release|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Release|ARM.Build.0 = Release|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Release|x64.ActiveCfg = Release|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Release|x64.Build.0 = Release|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Release|x86.ActiveCfg = Release|Any CPU
-		{E969967B-6264-4454-9B30-8EA924D50ED4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
