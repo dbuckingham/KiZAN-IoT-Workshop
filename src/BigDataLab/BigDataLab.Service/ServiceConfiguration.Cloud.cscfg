@@ -3,7 +3,8 @@
   <Role name="BigDataLab.WorkerRole">
     <Instances count="1" />
     <ConfigurationSettings>
-      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="UseDevelopmentStorage=true" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=kizaniotworkerrole;AccountKey=SykdA51JAQBLlMIb1jiVrDyfNS39CKM0N+e3W1j/iG8job/XD9Fi+LN30UL+tuRncxpZUjc9onK1fDBuIdHLKw==" />
+      <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" value="33023510-7edf-41c6-afc5-8e9beffb99eb" />
     </ConfigurationSettings>
   </Role>
 </ServiceConfiguration>
