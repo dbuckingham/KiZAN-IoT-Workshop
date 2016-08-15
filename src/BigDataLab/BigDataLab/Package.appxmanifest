@@ -14,7 +14,7 @@
     <Resource Language="x-generate" />
   </Resources>
   <Applications>
-    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="Lab03_uwp.App">
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="BigDataLab.App">
       <uap:VisualElements DisplayName="KiZAN IoT Workshop - Big Data Lab" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="KiZAN IoT Workshop - Big Data Lab" BackgroundColor="transparent">
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>

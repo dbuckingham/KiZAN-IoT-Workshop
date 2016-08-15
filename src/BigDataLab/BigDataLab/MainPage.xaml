@@ -1,8 +1,7 @@
 ﻿<Page
-    x:Class="Lab03_uwp.MainPage"
+    x:Class="BigDataLab.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Lab03_uwp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -50,9 +49,6 @@
 
         <StackPanel Grid.Row="1" Grid.Column="1" BorderThickness="0" VerticalAlignment="Center">
             <TextBox x:Name="CurrentTempFTextBox" Text="The current temperature is -- °F." 
-                 HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"
-                 Margin="10" IsReadOnly="True" FontSize="48" BorderThickness="0" TextWrapping="Wrap" />
-            <TextBox x:Name="AverageTempFTextBox" Text="The average temperature is -- °F." 
                  HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"
                  Margin="10" IsReadOnly="True" FontSize="48" BorderThickness="0" TextWrapping="Wrap" />
         </StackPanel>

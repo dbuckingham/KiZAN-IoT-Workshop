@@ -1,26 +1,20 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Gpio;
 using Windows.Devices.Spi;
+using Windows.System.Threading;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Devices.Tpm;
 using Newtonsoft.Json;
-using ppatierno.AzureSBLite;
-using ppatierno.AzureSBLite.Messaging;
-using Windows.ApplicationModel.Background;
-using Windows.System.Threading;
-using TransportType = Microsoft.Azure.Devices.Client.TransportType;
-using System.Runtime.InteropServices;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
-namespace Lab03_uwp
+namespace BigDataLab
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
@@ -37,7 +31,6 @@ namespace Lab03_uwp
         private SpiDevice _mcp3008;
         private DeviceClient _deviceClient;
         private int _iotHubToggle = -1;
-        private double _avgTemperature;
 
         private GpioController _gpio = null;
         private GpioPin _redLedPin;
@@ -53,6 +46,11 @@ namespace Lab03_uwp
         private static readonly DateTime StartTime = DateTime.UtcNow;
         private double _baseRuntimeHours;
 
+        //Alarm
+        private bool _isInAlarmState = false;
+        private string _alarmDescription = "";
+        private DateTime _alarmOnDateTime = DateTime.MinValue;
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -63,8 +61,6 @@ namespace Lab03_uwp
             _dispatcherTimer.Tick += DispatcherTimerTick;
             _dispatcherTimer.Interval = TimeSpan.FromSeconds(1);
             _dispatcherTimer.Start();
-
-            var t = Task.Run(() => ReceiveAverageTemperature());
         }
 
         private void Initialize()
@@ -74,7 +70,6 @@ namespace Lab03_uwp
             Application.Current.UnhandledException += Current_UnhandledException;
 
             ThermometerValue.Visibility =
-                AverageTempFTextBox.Visibility =
                 Visibility.Collapsed;
 
             InitializeGpio();
@@ -96,12 +91,31 @@ namespace Lab03_uwp
         {
             while (true)
             {
-                Message receivedMessage = await _deviceClient.ReceiveAsync();
-                if (receivedMessage == null) continue;
+                try
+                {
+                    Message receivedMessage = await _deviceClient.ReceiveAsync();
+                    if (receivedMessage == null) continue;
 
-                Debug.WriteLine("{0}", Encoding.ASCII.GetString(receivedMessage.GetBytes()));
+                    var messageBody = Encoding.ASCII.GetString(receivedMessage.GetBytes());
 
-                await _deviceClient.CompleteAsync(receivedMessage);
+                    Debug.WriteLine("{0}", messageBody);
+
+                    var definition = new { deviceId = "", alert = 0, description = "" };
+                    var result = JsonConvert.DeserializeAnonymousType(messageBody, definition);
+
+                    if (result.alert == 1) _alarmOnDateTime = DateTime.UtcNow;
+
+                    _isInAlarmState = (result.alert == 1);
+                    _alarmDescription = result.description;
+
+                    await _deviceClient.CompleteAsync(receivedMessage);
+                }
+                catch (Exception e)
+                {
+                    Debug.Write(e);
+
+                    _deviceClient = InitializeDeviceClient();
+                }
             }
         }
 
@@ -160,9 +174,22 @@ namespace Lab03_uwp
 
             _deviceId = deviceId;
 
-            return DeviceClient.Create(
-                hubUri,
-                AuthenticationMethodFactory.CreateAuthenticationWithToken(deviceId, sasToken));
+            DeviceClient deviceClient = null;
+
+            try
+            {
+                deviceClient = DeviceClient.Create(
+                    hubUri,
+                    AuthenticationMethodFactory.CreateAuthenticationWithToken(deviceId, sasToken));
+
+                return deviceClient;
+            }
+            catch
+            {
+                Debug.WriteLine("ERROR!  Unable to create device client!");
+            }
+
+            return deviceClient;
         }
 
         private void DispatcherTimerTick(object sender, object e)
@@ -172,8 +199,8 @@ namespace Lab03_uwp
             var temperatureRecord = ReadTemperature();
             Debug.WriteLine($"The temperature is {temperatureRecord.Celsius} Celsius and {temperatureRecord.Fahrenheit} Farenheit.");
 
+            UpdateCircuit();
             UpdateTemperatureControls(temperatureRecord);
-            UpdateCircuit(temperatureRecord);
 
             if (TemperatureShouldBeSentToIotHub())
             {
@@ -185,6 +212,27 @@ namespace Lab03_uwp
                 {
                     Debug.WriteLine(ex.Message);
                 }
+            }
+        }
+
+        private void UpdateCircuit()
+        {
+            var elapsedTime = DateTime.UtcNow - _alarmOnDateTime;
+
+            if (elapsedTime < TimeSpan.FromSeconds(60))
+            {
+                _redLedPin.Write(GpioPinValue.Low);
+            }
+            else
+            {
+                _redLedPin.Write(GpioPinValue.High);
+            }
+
+            if (_isInAlarmState)
+            {
+                ErrorTextBox.Text = "An error was detected with the circuit.";
+                ErrorTextBox.Visibility = Visibility.Visible;
+                ErrorIcon.Visibility = Visibility.Visible;
             }
         }
 
@@ -250,19 +298,8 @@ namespace Lab03_uwp
                     ErrorTextBox.Visibility = Visibility.Collapsed;
                     ErrorIcon.Visibility = Visibility.Collapsed;
                 }
-                
-                CurrentTempFTextBox.Text = string.Format("The current\r\ntemperature\r\nis {0} °F.", Math.Round(temperatureRecord.Fahrenheit, 2));
-                
 
-                if (_avgTemperature > 0.0)
-                {
-                    AverageTempFTextBox.Text = string.Format("The average\r\ntemperature\r\nis {0} °F.", Math.Round(_avgTemperature, 2));
-                    AverageTempFTextBox.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    AverageTempFTextBox.Visibility = Visibility.Collapsed;
-                }
+                CurrentTempFTextBox.Text = string.Format("The current\r\ntemperature\r\nis {0} °F.", Math.Round(temperatureRecord.Fahrenheit, 2));
 
                 UpdateThermometerControls(temperatureRecord);
             }
@@ -282,15 +319,6 @@ namespace Lab03_uwp
 
             ThermometerValue.Margin = margin;
             ThermometerValue.Height = thermometerHeight;
-        }
-
-        private void UpdateCircuit(TemperatureRecord temperatureRecord)
-        {
-            var redValue = (temperatureRecord.Fahrenheit > _avgTemperature) ? GpioPinValue.Low : GpioPinValue.High;
-            _redLedPin.Write(redValue);
-
-            var yellowValue = (temperatureRecord.Fahrenheit <= _avgTemperature) ? GpioPinValue.Low : GpioPinValue.High;
-            _yellowLedPin.Write(yellowValue);
         }
 
         private bool TemperatureShouldBeSentToIotHub()
@@ -328,52 +356,6 @@ namespace Lab03_uwp
             {
                 Debug.WriteLine("FAILED to send temperature to Iot Hub.");
                 Debug.WriteLine(ex);
-            }
-        }
-
-        private async void ReceiveAverageTemperature()
-        {
-            try
-            {
-                while (true)
-                {
-                    ServiceBusConnectionStringBuilder builder = new ServiceBusConnectionStringBuilder("Endpoint=sb://kizaniotworkshop.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=QAJrGyephdqNLOXmBOGtNGS07jbd5EJ298N6Ap/Mn0U=");
-                    builder.TransportType = ppatierno.AzureSBLite.Messaging.TransportType.Amqp;
-
-                    MessagingFactory factory = MessagingFactory.CreateFromConnectionString("Endpoint=sb://kizaniotworkshop.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=QAJrGyephdqNLOXmBOGtNGS07jbd5EJ298N6Ap/Mn0U=");
-
-                    SubscriptionClient client = factory.CreateSubscriptionClient("avgtempnotification", "iot");
-
-                    while (true)
-                    {
-                        try
-                        {
-                            BrokeredMessage message = client.Receive();
-                            if (message != null)
-                            {
-                                var messageText = Encoding.ASCII.GetString(message.GetBytes());
-                                var startingIndex = messageText.IndexOf("?", StringComparison.Ordinal);
-                                var messageBody = messageText.Substring(startingIndex + 2);
-
-                                var definition = new { timestamp = DateTime.Now, avgtempc = 0.0, avgtempf = 0.0 };
-                                var result = JsonConvert.DeserializeAnonymousType(messageBody, definition);
-
-                                _avgTemperature = result.avgtempf;
-                                Debug.WriteLine($"<< Received Average Temperature from Cloud (in degrees F)... {_avgTemperature}");
-
-                                message.Complete();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(ex.Message);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
             }
         }
 
