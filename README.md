@@ -9,10 +9,10 @@ Shortened link to this repo: [http://bit.ly/AzureIoTWorkshop](http://bit.ly/Azur
 ## Download Instructions
 
 1. Find and click the green "Clone or download" button.  
-![Clone or download](/img/GitHub 01.PNG "Clone or download")
+![Clone or download](/img/GitHub_01.PNG "Clone or download")
 
 2. Find and click the "Download ZIP" button.  Save the zip file to your local machine.    
-![Download ZIP](/img/GitHub 02.PNG "Download ZIP")
+![Download ZIP](/img/GitHub_02.PNG "Download ZIP")
 
 3. Windows Users: using Windows Explorer, locate the zip file, right-click on the file and select "Properties...".  In the area labeled "Security", check the Unblock checkbox, and click OK.  
-![Unblock](/img/GitHub 03.PNG "Unblock")
+![Unblock](/img/GitHub_03.PNG "Unblock")
