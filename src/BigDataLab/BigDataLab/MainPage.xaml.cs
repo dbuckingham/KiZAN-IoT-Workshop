@@ -23,7 +23,7 @@ namespace BigDataLab
     {
         private const int RED_LED_PIN = 4; // GPIO pin G4
         private const int YLW_LED_PIN = 5; // GPIO pin G5
-        private const int IotHubSendInterval = 5;
+        private const int IotHubSendInterval = 30;
 
         private string _deviceId;
 
@@ -336,8 +336,8 @@ namespace BigDataLab
                 var dataPoints = new
                 {
                     deviceId = _deviceId,
-                    tempC = temperatureRecord.Celsius,
-                    tempF = temperatureRecord.Fahrenheit,
+                    tempC = Math.Round(temperatureRecord.Celsius, 2),
+                    tempF = Math.Round(temperatureRecord.Fahrenheit, 2),
                     runtime
                 };
 
